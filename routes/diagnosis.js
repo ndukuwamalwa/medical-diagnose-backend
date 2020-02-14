@@ -184,9 +184,12 @@ router.post('/diagnose', async (req, res) => {
 });
 
 router.put("/diagnosis/validate", async (req, res) => {
+    let validity = req.query.valid || '';
+    validity = validity.toLowerCase();
     try {
         const id = req.body.id || null;
-        await Diagnosis.update({ valid: true }, { where: { ID: id } })
+        validity = validity === 'true' ? true : false;
+        await Diagnosis.update({ valid: validity }, { where: { ID: id } });
         return res.status(200).json();
     } catch (error) {
         return res.status(500).json();
