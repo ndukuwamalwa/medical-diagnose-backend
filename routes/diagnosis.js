@@ -8,6 +8,12 @@ const Specialisation = diag.DiagnosisSpecialization;
 const PatientInfo = require("../models/patient_info");
 const Symptoms = require("../models/symptom");
 
+const auth_uri = process.env.PRIAID_auth_uri;
+const api_uri = process.env.PRIAID_API_uri;
+const secret = process.env.PRIAID_secret_key;
+const computedHash = crypto.HmacMD5(auth_uri, secret);
+const computedHashString = computedHash.toString(crypto.enc.Base64);
+
 /**
  * Validates the given symptoms from the database
  * @param {number[]} symptoms numbers to check
@@ -43,11 +49,6 @@ async function diagnosticExists(id) {
  * @param {Response} res Server response object
  */
 async function runDiagnostics(year, gender, symptomsString, req, res) {
-    const auth_uri = process.env.PRIAID_auth_uri;
-    const api_uri = process.env.PRIAID_API_uri;
-    const secret = process.env.PRIAID_secret_key;
-    const computedHash = crypto.HmacMD5(auth_uri, secret);
-    const computedHashString = computedHash.toString(crypto.enc.Base64);
     const symptoms = JSON.stringify(symptomsString.split(','));
     //Auhenticate
     request({
@@ -201,11 +202,6 @@ router.put("/diagnosis/validate", async (req, res) => {
  * @param {Response} res Server response object
  */
 async function populateSymptoms(res) {
-    const auth_uri = process.env.PRIAID_auth_uri;
-    const api_uri = process.env.PRIAID_API_uri;
-    const secret = process.env.PRIAID_secret_key;
-    const computedHash = crypto.HmacMD5(auth_uri, secret);
-    const computedHashString = computedHash.toString(crypto.enc.Base64);
     //Auhenticate
     request({
         uri: auth_uri,
