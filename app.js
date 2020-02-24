@@ -1,4 +1,6 @@
 const http = require("http");
+const cluster = require('cluster');
+const cpus = require('os').cpus().length;
 const dotenv = require("dotenv");
 dotenv.config();
 const app = require("express")();
@@ -23,8 +25,18 @@ app.use((req, res, next) => {
 app.use('/login', auth.authenticate);
 app.use(routes);
 
-const server = http.createServer(app);
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log("Server is running...");
-});
+if (cluster.isMaster) {
+    //Fork workers
+    for (let i = 0; i < cpus; i++) {
+        cluster.fork();
+    }
+    cluster.on('exit', (worker, code, signal) => {
+        console.log(`worker ${worker.process.pid} died`);
+    });
+} else {
+    const server = http.createServer(app);
+    const PORT = process.env.PORT || 3000;
+    server.listen(PORT, () => {
+        console.log("Server is running...");
+    });
+}
